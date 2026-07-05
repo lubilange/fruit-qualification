@@ -184,6 +184,20 @@ st.markdown("""
     <p>Système intelligent de contrôle automatique de la qualité des fruits</p>
 </div>
 """, unsafe_allow_html=True)
+st.markdown("""
+<div class="card" style="margin-bottom:25px;">
+    <h3>🍎 Fruits supportés</h3>
+    <p>Apple • Banana • Guava • Lime • Orange • Pomegranate</p>
+
+    <h3>🎯 Prédiction</h3>
+    <p>Le modèle prédit uniquement la qualité du fruit : 
+    <b>Good</b> • <b>Bad</b> • <b>Mixed</b></p>
+
+    <h3>⚠️ Limitation</h3>
+    <p>Le modèle est conçu uniquement pour les six espèces ci-dessus. 
+    Il ne doit pas être utilisé pour d'autres fruits ou pour des objets comme du papier, un téléphone ou une voiture.</p>
+</div>
+""", unsafe_allow_html=True)
 
 left, right = st.columns([1, 1])
 
