@@ -335,7 +335,7 @@ else:
             <h3>🎯 Classes prédites</h3>
             <p>🟢 <b>Good</b> : bon état</p>
             <p>🔴 <b>Bad</b> : mauvais état</p>
-            <p>🟡 <b>Mixed</b> : état intermédiaire</p>
+            <p>🟡 <b>Mixed</b> : bon et mauvais état </p>
         </div>
         """, unsafe_allow_html=True)
 
