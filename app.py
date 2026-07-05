@@ -204,7 +204,7 @@ if page == "Analyse":
 
     st.markdown("""
     <div class="hero">
-        <h1>🍎 Smart Fruit Quality Inspection</h1>
+        <h1> Fruit Quality Inspection</h1>
         <p>Analyse automatique de la qualité des fruits par Intelligence Artificielle</p>
     </div>
     """, unsafe_allow_html=True)
