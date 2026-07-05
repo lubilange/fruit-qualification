@@ -1,122 +1,252 @@
+import os
+import io
+import base64
+import gdown
 import streamlit as st
 import tensorflow as tf
 import numpy as np
-from PIL import Image
 import pandas as pd
+from PIL import Image
+from datetime import datetime
 
 IMG_SIZE = 224
 CLASS_NAMES = ["Bad", "Good", "Mixed"]
 
+MODEL_PATH = "efficientnetb0_fruit_quality.keras"
+FILE_ID = "1f_DZ2Iknwa2vXTTC5TkDzIXHmRPaWz3a"
+
 st.set_page_config(
     page_title="Fruit Quality AI",
     page_icon="🍎",
-    layout="centered"
+    layout="wide"
 )
 
 st.markdown("""
 <style>
 .stApp {
-    background: linear-gradient(135deg, #fff7e6 0%, #ffe8cc 40%, #e8ffd8 100%);
+    background: linear-gradient(135deg, #fff7e6 0%, #ffe4b5 35%, #e8ffd8 100%);
 }
-.main-card {
+
+.hero {
+    background: linear-gradient(120deg, #2e7d32, #66bb6a, #ffb300);
+    padding: 35px;
+    border-radius: 28px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+    margin-bottom: 25px;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.hero p {
+    font-size: 20px;
+    margin-top: 0;
+}
+
+.card {
     background: white;
     padding: 28px;
     border-radius: 24px;
     box-shadow: 0 8px 28px rgba(0,0,0,0.12);
-    border: 2px solid #ffb347;
+    border: 1px solid #ffe0a3;
 }
-.title {
+
+.result-good {
+    background: linear-gradient(135deg, #d8f5d0, #b9f6ca);
+    color: #1b5e20;
+    padding: 24px;
+    border-radius: 22px;
     text-align: center;
-    font-size: 42px;
+    font-size: 26px;
     font-weight: 800;
-    color: #2e7d32;
 }
-.subtitle {
+
+.result-bad {
+    background: linear-gradient(135deg, #ffd6d6, #ffb3b3);
+    color: #b71c1c;
+    padding: 24px;
+    border-radius: 22px;
+    text-align: center;
+    font-size: 26px;
+    font-weight: 800;
+}
+
+.result-mixed {
+    background: linear-gradient(135deg, #fff3cd, #ffe082);
+    color: #8a6d00;
+    padding: 24px;
+    border-radius: 22px;
+    text-align: center;
+    font-size: 26px;
+    font-weight: 800;
+}
+
+.metric-box {
+    background: #fffaf0;
+    padding: 18px;
+    border-radius: 18px;
+    border-left: 6px solid #ffb300;
+    margin-top: 14px;
+}
+
+.footer {
     text-align: center;
     color: #555;
-    font-size: 18px;
-}
-.result-good {
-    background: #d8f5d0;
-    color: #1b5e20;
-    padding: 18px;
-    border-radius: 16px;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-}
-.result-bad {
-    background: #ffd6d6;
-    color: #b71c1c;
-    padding: 18px;
-    border-radius: 16px;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-}
-.result-mixed {
-    background: #fff3cd;
-    color: #8a6d00;
-    padding: 18px;
-    border-radius: 16px;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
+    margin-top: 30px;
 }
 </style>
 """, unsafe_allow_html=True)
 
+
 @st.cache_resource
 def load_model():
-    return tf.keras.models.load_model("efficientnetb0_fruit_quality.keras")
+    if not os.path.exists(MODEL_PATH):
+        with st.spinner("Téléchargement du modèle IA..."):
+            gdown.download(
+                id=FILE_ID,
+                output=MODEL_PATH,
+                quiet=False
+            )
+    return tf.keras.models.load_model(MODEL_PATH)
+
+
+def circular_gauge(confidence):
+    value = round(confidence, 2)
+    st.markdown(f"""
+    <div style="
+        width: 190px;
+        height: 190px;
+        border-radius: 50%;
+        background: conic-gradient(#2e7d32 {value}%, #eeeeee 0%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: auto;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    ">
+        <div style="
+            width: 135px;
+            height: 135px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-weight: 800;
+            color: #2e7d32;
+        ">
+            <div style="font-size: 34px;">{value}%</div>
+            <div style="font-size: 14px;">Confiance</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def generate_report(predicted_class, confidence, prob_df):
+    report = f"""
+RAPPORT DE PRÉDICTION - FRUIT QUALITY AI
+Date : {datetime.now().strftime('%d/%m/%Y %H:%M')}
+
+Résultat principal :
+Classe prédite : {predicted_class}
+Confiance : {confidence:.2f} %
+
+Probabilités par classe :
+"""
+
+    for _, row in prob_df.iterrows():
+        report += f"- {row['Classe']} : {row['Probabilité (%)']} %\n"
+
+    report += """
+
+Interprétation :
+- Good : fruit de bonne qualité.
+- Bad : fruit de mauvaise qualité.
+- Mixed : qualité intermédiaire ou ambiguë.
+
+Modèle utilisé :
+EfficientNetB0 avec transfert d'apprentissage.
+"""
+
+    return report.encode("utf-8")
+
 
 model = load_model()
 
-st.markdown('<div class="main-card">', unsafe_allow_html=True)
+st.markdown("""
+<div class="hero">
+    <h1>🍎 Fruit Quality AI </h1>
+    <p>Système intelligent de contrôle automatique de la qualité des fruits</p>
+</div>
+""", unsafe_allow_html=True)
 
-st.markdown('<div class="title">🍓 Fruit Quality AI 🍊</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="subtitle">Système intelligent de contrôle de la qualité des fruits</div>',
-    unsafe_allow_html=True
-)
+left, right = st.columns([1, 1])
 
-st.write("")
-uploaded_file = st.file_uploader(
-    "📤 Importer une image de fruit",
-    type=["jpg", "jpeg", "png", "webp"]
-)
+with left:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("Image à analyser")
+
+    uploaded_file = st.file_uploader(
+        "Importer une image de fruit",
+        type=["jpg", "jpeg", "png", "webp"]
+    )
+
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file).convert("RGB")
+        st.image(image, caption="Image importée", use_container_width=True)
+    else:
+        st.info("Ajoute une image pour lancer l'analyse.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with right:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader(" Résultat de prédiction")
+
+    if uploaded_file is not None:
+        img = image.resize((IMG_SIZE, IMG_SIZE))
+        img_array = np.array(img).astype("float32") / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
+
+        preds = model.predict(img_array, verbose=0)[0]
+
+        predicted_idx = int(np.argmax(preds))
+        predicted_class = CLASS_NAMES[predicted_idx]
+        confidence = float(preds[predicted_idx]) * 100
+
+        if predicted_class == "Good":
+            st.markdown(
+                f'<div class="result-good">Fruit de bonne qualité<br>{confidence:.2f}%</div>',
+                unsafe_allow_html=True
+            )
+        elif predicted_class == "Bad":
+            st.markdown(
+                f'<div class="result-bad">Fruit de mauvaise qualité<br>{confidence:.2f}%</div>',
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                f'<div class="result-mixed">Qualité mixte<br>{confidence:.2f}%</div>',
+                unsafe_allow_html=True
+            )
+
+        st.write("")
+        circular_gauge(confidence)
+
+    else:
+        st.warning("Aucune image analysée pour le moment.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
-
-    st.image(image, caption="Image importée", use_container_width=True)
-
-    img = image.resize((IMG_SIZE, IMG_SIZE))
-    img_array = np.array(img).astype("float32") / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
-
-    preds = model.predict(img_array, verbose=0)[0]
-    predicted_idx = int(np.argmax(preds))
-    predicted_class = CLASS_NAMES[predicted_idx]
-    confidence = preds[predicted_idx] * 100
-
-    if predicted_class == "Good":
-        st.markdown(
-            f'<div class="result-good">✅ Fruit de bonne qualité<br>{confidence:.2f}% de confiance</div>',
-            unsafe_allow_html=True
-        )
-    elif predicted_class == "Bad":
-        st.markdown(
-            f'<div class="result-bad">❌ Fruit de mauvaise qualité<br>{confidence:.2f}% de confiance</div>',
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            f'<div class="result-mixed">⚠️ Qualité mixte<br>{confidence:.2f}% de confiance</div>',
-            unsafe_allow_html=True
-        )
-
     st.write("")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
     st.subheader("📊 Probabilités par classe")
 
     prob_df = pd.DataFrame({
@@ -126,12 +256,22 @@ if uploaded_file is not None:
 
     st.bar_chart(prob_df.set_index("Classe"))
 
-    with st.expander("Voir les détails numériques"):
+    with st.expander("📋 Voir les détails numériques"):
         st.dataframe(prob_df, use_container_width=True)
 
-else:
-    st.info("Ajoute une image pour lancer la prédiction.")
+    report_bytes = generate_report(predicted_class, confidence, prob_df)
 
-st.markdown("</div>", unsafe_allow_html=True)
+    st.download_button(
+        label="📄 Télécharger le rapport de prédiction",
+        data=report_bytes,
+        file_name="rapport_prediction_fruit_quality.txt",
+        mime="text/plain"
+    )
 
-st.caption("Prototype basé sur EfficientNetB0 — Contrôle intelligent de la qualité des fruits.")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="footer">
+    Prototype basé sur EfficientNetB0 — Contrôle intelligent de la qualité des fruits 
+</div>
+""", unsafe_allow_html=True)
