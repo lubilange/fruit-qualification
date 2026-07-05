@@ -1,13 +1,9 @@
 import os
-import io
-import base64
 import gdown
 import streamlit as st
 import tensorflow as tf
 import numpy as np
-import pandas as pd
 from PIL import Image
-from datetime import datetime
 
 IMG_SIZE = 224
 CLASS_NAMES = ["Bad", "Good", "Mixed"]
@@ -38,7 +34,7 @@ st.markdown("""
 }
 
 .hero h1 {
-    font-size: 48px;
+    font-size: 46px;
     margin-bottom: 8px;
 }
 
@@ -53,6 +49,7 @@ st.markdown("""
     border-radius: 24px;
     box-shadow: 0 8px 28px rgba(0,0,0,0.12);
     border: 1px solid #ffe0a3;
+    margin-bottom: 25px;
 }
 
 .result-good {
@@ -85,14 +82,6 @@ st.markdown("""
     font-weight: 800;
 }
 
-.metric-box {
-    background: #fffaf0;
-    padding: 18px;
-    border-radius: 18px;
-    border-left: 6px solid #ffb300;
-    margin-top: 14px;
-}
-
 .footer {
     text-align: center;
     color: #555;
@@ -111,11 +100,13 @@ def load_model():
                 output=MODEL_PATH,
                 quiet=False
             )
+
     return tf.keras.models.load_model(MODEL_PATH)
 
 
 def circular_gauge(confidence):
     value = round(confidence, 2)
+
     st.markdown(f"""
     <div style="
         width: 190px;
@@ -147,62 +138,36 @@ def circular_gauge(confidence):
     """, unsafe_allow_html=True)
 
 
-def generate_report(predicted_class, confidence, prob_df):
-    report = f"""
-RAPPORT DE PRÉDICTION - FRUIT QUALITY AI
-Date : {datetime.now().strftime('%d/%m/%Y %H:%M')}
-
-Résultat principal :
-Classe prédite : {predicted_class}
-Confiance : {confidence:.2f} %
-
-Probabilités par classe :
-"""
-
-    for _, row in prob_df.iterrows():
-        report += f"- {row['Classe']} : {row['Probabilité (%)']} %\n"
-
-    report += """
-
-Interprétation :
-- Good : fruit de bonne qualité.
-- Bad : fruit de mauvaise qualité.
-- Mixed : qualité intermédiaire ou ambiguë.
-
-Modèle utilisé :
-EfficientNetB0 avec transfert d'apprentissage.
-"""
-
-    return report.encode("utf-8")
-
-
 model = load_model()
 
 st.markdown("""
 <div class="hero">
-    <h1>🍎 Fruit Quality AI </h1>
-    <p>Système intelligent de contrôle automatique de la qualité des fruits</p>
+    <h1>Fruit Quality Inspection</h1>
+    <p>Analyse automatique de la qualité des fruits par Intelligence Artificielle</p>
 </div>
 """, unsafe_allow_html=True)
-st.markdown("""
-<div class="card" style="margin-bottom:25px;">
-    - Fruits supportés
-    <p>Apple • Banana • Guava • Lime • Orange • Pomegranate</p>
 
-    - Prédiction
-    <p>Le modèle prédit uniquement la qualité du fruit : 
-    <b>Good(Bon état)</b> • <b>Bad(mauvais état)</b> • <b>Mixed(bon et mauvais état)</b></p>
+st.info("""
+🍎 **Fruits supportés**
+Pomme • Banane • Goyave • Citron vert • Orange • Grenade
 
-    - Limitation
-    <p>Le modèle est conçu uniquement pour les six espèces ci-dessus. 
-    Il ne doit pas être utilisé pour d'autres fruits ou pour des objets comme du papier, un téléphone ou une voiture.</p>
-</div>
-""", unsafe_allow_html=True)
+🎯 **Le modèle prédit uniquement la qualité**
+
+🟢 **Good** : Bon état  
+🔴 **Bad** : Mauvais état  
+🟡 **Mixed** : Bon et mauvais état
+
+⚠️ **Limitation**
+
+Le modèle fonctionne uniquement avec ces six espèces de fruits.  
+Les objets comme le papier, le téléphone, la bouteille ou la voiture peuvent produire des prédictions non fiables.
+""")
 
 left, right = st.columns([1, 1])
 
 with left:
     st.markdown('<div class="card">', unsafe_allow_html=True)
+
     st.subheader("Image à analyser")
 
     uploaded_file = st.file_uploader(
@@ -220,7 +185,8 @@ with left:
 
 with right:
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader(" Résultat de prédiction")
+
+    st.subheader("Résultat de prédiction")
 
     if uploaded_file is not None:
         img = image.resize((IMG_SIZE, IMG_SIZE))
@@ -235,17 +201,17 @@ with right:
 
         if predicted_class == "Good":
             st.markdown(
-                f'<div class="result-good">Fruit de bonne qualité<br>{confidence:.2f}%</div>',
+                f'<div class="result-good">🟢 Fruit de bonne qualité<br>{confidence:.2f}%</div>',
                 unsafe_allow_html=True
             )
         elif predicted_class == "Bad":
             st.markdown(
-                f'<div class="result-bad">Fruit de mauvaise qualité<br>{confidence:.2f}%</div>',
+                f'<div class="result-bad">🔴 Fruit de mauvaise qualité<br>{confidence:.2f}%</div>',
                 unsafe_allow_html=True
             )
         else:
             st.markdown(
-                f'<div class="result-mixed">Qualité mixte<br>{confidence:.2f}%</div>',
+                f'<div class="result-mixed">🟡 Qualité mixte<br>{confidence:.2f}%</div>',
                 unsafe_allow_html=True
             )
 
@@ -257,24 +223,29 @@ with right:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+if uploaded_file is not None:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
 
+    st.subheader("Niveau de confiance par classe")
 
-    with st.expander("📋 Voir les détails numériques"):
-        st.dataframe(prob_df, use_container_width=True)
+    for classe, prob in zip(CLASS_NAMES, preds):
+        if classe == "Good":
+            emoji = "🟢"
+            label = "Good - Bon état"
+        elif classe == "Bad":
+            emoji = "🔴"
+            label = "Bad - Mauvais état"
+        else:
+            emoji = "🟡"
+            label = "Mixed - Bon et mauvais état"
 
-    report_bytes = generate_report(predicted_class, confidence, prob_df)
-
-    st.download_button(
-        label="📄 Télécharger le rapport de prédiction",
-        data=report_bytes,
-        file_name="rapport_prediction_fruit_quality.txt",
-        mime="text/plain"
-    )
+        st.write(f"{emoji} **{label}** : {prob * 100:.2f}%")
+        st.progress(float(prob))
 
     st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("""
 <div class="footer">
-    Prototype basé sur EfficientNetB0 — Contrôle intelligent de la qualité des fruits 
+    Prototype basé sur EfficientNetB0 — Contrôle intelligent de la qualité des fruits
 </div>
 """, unsafe_allow_html=True)
