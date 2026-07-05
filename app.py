@@ -257,18 +257,7 @@ with right:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-if uploaded_file is not None:
-    st.write("")
-    st.markdown('<div class="card">', unsafe_allow_html=True)
 
-    st.subheader("📊 Probabilités par classe")
-
-    prob_df = pd.DataFrame({
-        "Classe": CLASS_NAMES,
-        "Probabilité (%)": [round(float(p) * 100, 2) for p in preds]
-    })
-
-    st.bar_chart(prob_df.set_index("Classe"))
 
     with st.expander("📋 Voir les détails numériques"):
         st.dataframe(prob_df, use_container_width=True)
