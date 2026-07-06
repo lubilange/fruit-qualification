@@ -12,8 +12,8 @@ from PIL import Image
 IMG_SIZE = 224
 CLASS_NAMES = ["Bad", "Good", "Mixed"]
 
-MODEL_PATH = "efficientnetb0_fruit_quality.keras"
-FILE_ID = "1f_DZ2Iknwa2vXTTC5TkDzIXHmRPaWz3a"
+MODEL_PATH = "best_model_fruit_quality.keras"
+FILE_ID = "1IRSHfpEba8pSBoCjegoOKaPUVLYC7H5H"
 
 st.set_page_config(
     page_title="Fruit Quality AI",
