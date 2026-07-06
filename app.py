@@ -187,8 +187,8 @@ st.sidebar.write("EfficientNetB0")
 st.sidebar.write("Transfer Learning")
 
 st.sidebar.markdown("### Performances")
-st.sidebar.write("Accuracy : **94,20 %**")
-st.sidebar.write("F1-score macro : **88,85 %**")
+st.sidebar.write("Accuracy : **93,9 %**")
+st.sidebar.write("F1-score macro : **89,3 %**")
 
 # =========================
 # CHARGER MODÈLE
