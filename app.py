@@ -25,14 +25,25 @@ st.set_page_config(
 # STYLE CSS
 # =========================
 
+# =========================
+# STYLE CSS (LIGHT + DARK MODE COMPATIBLE)
+# =========================
+
 st.markdown("""
 <style>
+
 .stApp {
-    background: linear-gradient(135deg, #fff8e1 0%, #ffe0b2 35%, #e8f5e9 100%);
+    background: var(--background-color);
 }
 
+/* HERO */
 .hero {
-    background: linear-gradient(120deg, #1b5e20, #43a047, #f9a825);
+    background: linear-gradient(
+        120deg,
+        #1b5e20,
+        #43a047,
+        #f9a825
+    );
     padding: 34px;
     border-radius: 30px;
     color: white;
@@ -51,60 +62,80 @@ st.markdown("""
     margin-top: 0;
 }
 
+
+/* CARTES */
 .card {
-    background: rgba(255,255,255,0.96);
+    background: var(--secondary-background-color);
     padding: 28px;
     border-radius: 26px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-    border: 1px solid #ffe0a3;
+    border: 1px solid rgba(128,128,128,0.25);
     margin-bottom: 25px;
+    color: var(--text-color);
 }
 
+
 .small-card {
-    background: white;
+    background: var(--secondary-background-color);
     padding: 20px;
     border-radius: 22px;
     box-shadow: 0 7px 20px rgba(0,0,0,0.10);
     border-left: 7px solid #f9a825;
     margin-bottom: 18px;
+    color: var(--text-color);
 }
 
+
+/* RESULTATS */
 .result-good {
-    background: linear-gradient(135deg, #d8f5d0, #b9f6ca);
-    color: #1b5e20;
-    padding: 25px;
-    border-radius: 24px;
-    text-align: center;
-    font-size: 28px;
-    font-weight: 800;
+    background: rgba(76,175,80,0.18);
+    color: #4caf50;
+    padding:25px;
+    border-radius:24px;
+    text-align:center;
+    font-size:28px;
+    font-weight:800;
 }
+
 
 .result-bad {
-    background: linear-gradient(135deg, #ffd6d6, #ffb3b3);
-    color: #b71c1c;
-    padding: 25px;
-    border-radius: 24px;
-    text-align: center;
-    font-size: 28px;
-    font-weight: 800;
+    background: rgba(244,67,54,0.18);
+    color:#ef5350;
+    padding:25px;
+    border-radius:24px;
+    text-align:center;
+    font-size:28px;
+    font-weight:800;
 }
+
 
 .result-mixed {
-    background: linear-gradient(135deg, #fff3cd, #ffe082);
-    color: #8a6d00;
-    padding: 25px;
-    border-radius: 24px;
-    text-align: center;
-    font-size: 28px;
-    font-weight: 800;
+    background: rgba(255,193,7,0.18);
+    color:#ffc107;
+    padding:25px;
+    border-radius:24px;
+    text-align:center;
+    font-size:28px;
+    font-weight:800;
 }
 
+
+/* FOOTER */
 .footer {
-    text-align: center;
-    color: #555;
-    margin-top: 35px;
-    font-size: 14px;
+    text-align:center;
+    color:var(--text-color);
+    opacity:0.7;
+    margin-top:35px;
+    font-size:14px;
 }
+
+
+/* JAUGE */
+.gauge-center {
+    background:var(--background-color);
+    color:var(--text-color);
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -143,13 +174,13 @@ def circular_gauge(confidence):
             width: 142px;
             height: 142px;
             border-radius: 50%;
-            background: white;
+            background: var(--background-color);
+            color: var(--text-color);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             font-weight: 800;
-            color: #2e7d32;
         ">
             <div style="font-size: 36px;">{value}%</div>
             <div style="font-size: 14px;">Confiance</div>
